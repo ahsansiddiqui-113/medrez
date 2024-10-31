@@ -1,0 +1,61 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+* {
+  scrollbar-width: none;
+}
+
+.hover-effect {
+  transition: background-color 0.3s ease;
+}
+
+.hover-effect:hover {
+  background-color: #34d399; 
+}
+
+.row-hover-effect {
+  transition: background-color 0.3s ease;
+}
+
+.row-hover-effect:hover {
+  background-color: #34d399; 
+}
+
+.hoverable-div {
+  width: 100%;
+  height: 100%;
+  border: 1px solid #ddd;
+}
+
+.month-block {
+  display: flex;
+  height: 100%;
+  gap: 0px;
+  position: relative; 
+}
+
+.week-block {
+  width: 100%;
+  height: 100%;
+  background-color: #ffffff;
+  position: relative;
+}
+
+.week-block:hover {
+  background-color: #11be79;
+}
+
+.tooltip {
+  position: absolute;
+  background-color: #11be79;
+  color: #fff;
+  padding: 5px;
+  border-radius: 5px;
+  display: block;
+  font-size: 12px;
+  top: -40px;
+  left: 50%;
+  transform: translateX(-50%);
+  white-space: nowrap;
+}
