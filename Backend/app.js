@@ -12,22 +12,29 @@ const shiftRoutes = require("./Routes/shiftRoutes");
 
 dotenv.config();
 
-console.log('JWT_SECRET:', process.env.JWT_SECRET);
-
 const app = express();
 app.use(express.json());
-app.use(cors());
 
+// CORS Configuration
+const corsOptions = {
+  origin: "*", // You can specify specific origins or IPs here instead of "*"
+  optionsSuccessStatus: 200,
+};
+app.use(cors(corsOptions));
+
+// MongoDB credentials and URI
 const DB_USERNAME = process.env.DB_USERNAME || "ahsansiddiqui";
 const DB_PASSWORD = process.env.DB_PASSWORD || "Ahsan_Password_1903";
 const DB_NAME = process.env.DB_NAME || "Medrez";
 const dbURI = `mongodb+srv://${DB_USERNAME}:${DB_PASSWORD}@cluster0.osqy2nd.mongodb.net/${DB_NAME}?retryWrites=true&w=majority`;
 
+// Connect to MongoDB
 mongoose
   .connect(dbURI, { useNewUrlParser: true, useUnifiedTopology: true })
   .then(() => console.log("MongoDB connected successfully"))
   .catch((err) => console.log("MongoDB connection error:", err));
 
+// User schema
 const userSchema = new mongoose.Schema({
   username: {
     type: String,
@@ -119,12 +126,14 @@ app.post("/api/login", async (req, res) => {
   }
 });
 
+// Routes
 app.use("/api/residents", residentsRouter);
 app.use("/api/rotations", rotationRoutes);
 app.use("/api/schedules", scheduleRoutes);
 app.use("/api/publishing-settings", publishingSettingsRoutes);
 app.use("/api/shifts", shiftRoutes);
 
+// Middleware for authentication and role checking
 const authMiddleware = (req, res, next) => {
   const authHeader = req.headers.authorization;
 
@@ -153,6 +162,7 @@ const roleMiddleware = (role) => {
   };
 };
 
+// Server setup
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, '0.0.0.0', () => console.log(`Server running on port ${PORT}`));
 
