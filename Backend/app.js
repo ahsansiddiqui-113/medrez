@@ -12,29 +12,23 @@ const shiftRoutes = require("./Routes/shiftRoutes");
 
 dotenv.config();
 
+console.log('JWT_SECRET:', process.env.JWT_SECRET); 
+
 const app = express();
 app.use(express.json());
+app.use(cors());
 
-// CORS Configuration
-const corsOptions = {
-  origin: "*", // You can specify specific origins or IPs here instead of "*"
-  optionsSuccessStatus: 200,
-};
-app.use(cors(corsOptions));
-
-// MongoDB credentials and URI
 const DB_USERNAME = process.env.DB_USERNAME || "ahsansiddiqui";
 const DB_PASSWORD = process.env.DB_PASSWORD || "Ahsan_Password_1903";
 const DB_NAME = process.env.DB_NAME || "Medrez";
-const dbURI = `mongodb+srv://${DB_USERNAME}:${DB_PASSWORD}@cluster0.osqy2nd.mongodb.net/${DB_NAME}?retryWrites=true&w=majority`;
 
-// Connect to MongoDB
+const dbURI = `mongodb+srv://${DB_USERNAME}:${DB_PASSWORD}@cluster0.osqy2nd.mongodb.net/${DB_NAME}`;
+
 mongoose
-  .connect(dbURI, { useNewUrlParser: true, useUnifiedTopology: true })
+  .connect(dbURI, {})
   .then(() => console.log("MongoDB connected successfully"))
   .catch((err) => console.log("MongoDB connection error:", err));
 
-// User schema
 const userSchema = new mongoose.Schema({
   username: {
     type: String,
@@ -59,7 +53,6 @@ const userSchema = new mongoose.Schema({
 
 const User = mongoose.model("User", userSchema);
 
-// Signup route
 app.post("/api/signup", async (req, res) => {
   const { username, email, password, role } = req.body;
 
@@ -76,7 +69,7 @@ app.post("/api/signup", async (req, res) => {
       username,
       email,
       password: hashedPassword,
-      role: role || "user",
+      role: role || "user", 
     });
     
     await newUser.save();
@@ -85,14 +78,13 @@ app.post("/api/signup", async (req, res) => {
       expiresIn: "1h",
     });
 
-    res.status(201).json({ token, user: newUser });
+    res.status(201).json({ token, user: newUser }); 
   } catch (error) {
     console.error("Error during signup:", error);
     res.status(500).json({ message: "Server error" });
   }
 });
 
-// Login route
 app.post("/api/login", async (req, res) => {
   const { email, password } = req.body;
 
@@ -117,7 +109,7 @@ app.post("/api/login", async (req, res) => {
         id: user._id,
         username: user.username,
         email: user.email,
-        role: user.role,
+        role: user.role, 
       },
     });
   } catch (error) {
@@ -126,12 +118,14 @@ app.post("/api/login", async (req, res) => {
   }
 });
 
-// Routes
 app.use("/api/residents", residentsRouter);
 app.use("/api/rotations", rotationRoutes);
 app.use("/api/schedules", scheduleRoutes);
 app.use("/api/publishing-settings", publishingSettingsRoutes);
 app.use("/api/shifts", shiftRoutes);
+
+const PORT = process.env.PORT || 5000;
+app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
 
 // Middleware for authentication and role checking
 const authMiddleware = (req, res, next) => {
@@ -145,8 +139,8 @@ const authMiddleware = (req, res, next) => {
 
   try {
     const decoded = jwt.verify(token, process.env.JWT_SECRET || "default_secret_key");
-    req.user = decoded;
-    next();
+    req.user = decoded; 
+    next(); 
   } catch (error) {
     return res.status(403).json({ message: "Token is invalid" });
   }
@@ -155,15 +149,11 @@ const authMiddleware = (req, res, next) => {
 const roleMiddleware = (role) => {
   return (req, res, next) => {
     if (req.user && req.user.role === role) {
-      next();
+      next(); 
     } else {
       return res.status(403).json({ message: `Access denied for ${role}s` });
     }
   };
 };
-
-// Server setup
-const PORT = process.env.PORT || 5000;
-app.listen(PORT, '0.0.0.0', () => console.log(`Server running on port ${PORT}`));
 
 module.exports = { authMiddleware, roleMiddleware };
